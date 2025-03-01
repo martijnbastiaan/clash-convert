@@ -60,9 +60,6 @@ import Test.Tasty.TH (testGroupGenerator)
 
 import qualified Data.List as L
 
--- > Just x == maybeConvert (convert @a @b x)
--- > toInteger x == toInteger (convert @a @b x)
-
 convertLaw1 :: forall a b. (Convert a b, MaybeConvert b a, Eq a) => Proxy b -> a -> Bool
 convertLaw1 _ x = Just x == maybeConvert (convert @a @b x)
 

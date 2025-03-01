@@ -2,7 +2,7 @@ cabal-version: 3.0
 name: clash-convert
 version: 0.1.0.0
 synopsis: Safely convert between different Clash number types
--- description:
+description: See module documentation of "Clash.Convert" for more information.
 license: BSD-2-Clause
 license-file: LICENSE
 author: Martijn Bastiaan
@@ -30,7 +30,11 @@ common common
 
 library
   import: common
-  exposed-modules: Clash.Convert
+  exposed-modules:
+    Clash.Convert
+    Clash.Convert.Internal.Convert
+    Clash.Convert.Internal.MaybeConvert
+
   build-depends:
     base,
     clash-prelude >=1.2.0,
@@ -45,7 +49,7 @@ test-suite unittests
   import: common
   default-language: Haskell2010
   type: exitcode-stdio-1.0
-  hs-source-dirs: tests
+  hs-source-dirs: tests/unittests
   ghc-options:
     -threaded
     -rtsopts
@@ -66,3 +70,15 @@ test-suite unittests
     tasty,
     tasty-hunit,
     tasty-th,
+
+test-suite doctests
+  type: exitcode-stdio-1.0
+  hs-source-dirs: tests/doctests
+  main-is: Main.hs
+  ghc-options: -threaded
+  build-depends:
+    base,
+    clash-convert,
+    doctest-parallel >=0.1,
+
+  default-language: Haskell2010
