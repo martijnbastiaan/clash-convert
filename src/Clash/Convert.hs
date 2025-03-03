@@ -13,8 +13,19 @@ properly. Two classes are exported:
 
 As opposed to 'Prelude.fromIntegral', all conversions are translatable to
 synthesizable HDL.
+
+== __Relation to @convertible@__
+@clash-convertible@ is similar to the @convertible@ package in that it aims to
+facilitate conversions between different number types. It has two key differences:
+
+ 1. It offers no partial functions.
+ 2. All its conversions are translatable to synthesizable HDL.
+
 -}
-module Clash.Convert (Convert (..), MaybeConvert (..)) where
+module Clash.Convert (
+  Convert (..),
+  MaybeConvert (..),
+) where
 
 import Clash.Convert.Internal.Convert
 import Clash.Convert.Internal.MaybeConvert

@@ -20,11 +20,16 @@ common common
 
   default-extensions:
     DataKinds
+    DefaultSignatures
+    FlexibleContexts
+    FlexibleInstances
     InstanceSigs
     MultiParamTypeClasses
     NoImplicitPrelude
     ScopedTypeVariables
     TypeApplications
+    TypeFamilies
+    TypeFamilyDependencies
     TypeOperators
     ViewPatterns
 

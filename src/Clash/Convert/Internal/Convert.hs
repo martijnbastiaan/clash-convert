@@ -5,6 +5,8 @@
 module Clash.Convert.Internal.Convert where
 
 import Clash.Prelude
+import Data.Int (Int16, Int32, Int64, Int8)
+import Data.Word (Word16, Word32, Word64, Word8)
 
 {- $setup
 >>> import Clash.Prelude
@@ -96,3 +98,47 @@ instance (KnownNat n, KnownNat m, n + 1 <= m) => Convert (BitVector n) (Signed m
 
 instance (KnownNat n, KnownNat m, n <= m) => Convert (BitVector n) (BitVector m) where
   convert = resize
+
+instance (Convert (Unsigned 64) a) => Convert Word a where
+  convert = convert . bitCoerce @_ @(Unsigned 64)
+instance (Convert (Unsigned 64) a) => Convert Word64 a where
+  convert = convert . bitCoerce @_ @(Unsigned 64)
+instance (Convert (Unsigned 32) a) => Convert Word32 a where
+  convert = convert . bitCoerce @_ @(Unsigned 32)
+instance (Convert (Unsigned 16) a) => Convert Word16 a where
+  convert = convert . bitCoerce @_ @(Unsigned 16)
+instance (Convert (Unsigned 8) a) => Convert Word8 a where
+  convert = convert . bitCoerce @_ @(Unsigned 8)
+
+instance (Convert (Signed 64) a) => Convert Int a where
+  convert = convert . bitCoerce @_ @(Signed 64)
+instance (Convert (Signed 64) a) => Convert Int64 a where
+  convert = convert . bitCoerce @_ @(Signed 64)
+instance (Convert (Signed 32) a) => Convert Int32 a where
+  convert = convert . bitCoerce @_ @(Signed 32)
+instance (Convert (Signed 16) a) => Convert Int16 a where
+  convert = convert . bitCoerce @_ @(Signed 16)
+instance (Convert (Signed 8) a) => Convert Int8 a where
+  convert = convert . bitCoerce @_ @(Signed 8)
+
+instance (Convert a (Unsigned 64)) => Convert a Word where
+  convert = bitCoerce @(Unsigned 64) . convert
+instance (Convert a (Unsigned 64)) => Convert a Word64 where
+  convert = bitCoerce @(Unsigned 64) . convert
+instance (Convert a (Unsigned 32)) => Convert a Word32 where
+  convert = bitCoerce @(Unsigned 32) . convert
+instance (Convert a (Unsigned 16)) => Convert a Word16 where
+  convert = bitCoerce @(Unsigned 16) . convert
+instance (Convert a (Unsigned 8)) => Convert a Word8 where
+  convert = bitCoerce @(Unsigned 8) . convert
+
+instance (Convert a (Signed 64)) => Convert a Int where
+  convert = bitCoerce @(Signed 64) . convert
+instance (Convert a (Signed 64)) => Convert a Int64 where
+  convert = bitCoerce @(Signed 64) . convert
+instance (Convert a (Signed 32)) => Convert a Int32 where
+  convert = bitCoerce @(Signed 32) . convert
+instance (Convert a (Signed 16)) => Convert a Int16 where
+  convert = bitCoerce @(Signed 16) . convert
+instance (Convert a (Signed 8)) => Convert a Int8 where
+  convert = bitCoerce @(Signed 8) . convert

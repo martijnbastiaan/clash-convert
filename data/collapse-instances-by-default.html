@@ -1,0 +1,17 @@
+<script>
+// Collapse instances by default. Makes documentation much more readable. It does
+// respect the user's preference though: if the user explicitly sets the option
+// to expand by default this script won't act.
+window.addEventListener('load', function(){
+  setTimeout(function(){
+    let global = JSON.parse(localStorage.getItem("global") || "{}");
+
+    if (global.defaultInstanceState === undefined) {
+      let collapsers = document.getElementsByClassName("instances collapser");
+      for (let i = 0; i < collapsers.length; i++) {
+        collapsers[i].click();
+      }
+    }
+  }, 10);
+});
+</script>

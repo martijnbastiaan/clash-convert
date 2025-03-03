@@ -6,6 +6,8 @@
 module Clash.Convert.Internal.MaybeConvert where
 
 import Clash.Prelude
+import Data.Int (Int16, Int32, Int64, Int8)
+import Data.Word (Word16, Word32, Word64, Word8)
 
 {- $setup
 >>> import Clash.Prelude
@@ -130,3 +132,36 @@ maybeResize v =
     _ -> Just (resize v)
 #endif
 {- FOURMOLU_ENABLE -}
+
+instance (MaybeConvert (Unsigned 64) a) => MaybeConvert Word a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Unsigned 64)
+instance (MaybeConvert (Unsigned 64) a) => MaybeConvert Word64 a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Unsigned 64)
+instance (MaybeConvert (Unsigned 32) a) => MaybeConvert Word32 a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Unsigned 32)
+instance (MaybeConvert (Unsigned 16) a) => MaybeConvert Word16 a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Unsigned 16)
+instance (MaybeConvert (Unsigned 8) a) => MaybeConvert Word8 a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Unsigned 8)
+
+instance (MaybeConvert (Signed 64) a) => MaybeConvert Int a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Signed 64)
+instance (MaybeConvert (Signed 64) a) => MaybeConvert Int64 a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Signed 64)
+instance (MaybeConvert (Signed 32) a) => MaybeConvert Int32 a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Signed 32)
+instance (MaybeConvert (Signed 16) a) => MaybeConvert Int16 a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Signed 16)
+instance (MaybeConvert (Signed 8) a) => MaybeConvert Int8 a where
+  maybeConvert = maybeConvert . bitCoerce @_ @(Signed 8)
+
+instance (MaybeConvert a (Unsigned 64)) => MaybeConvert a Word where
+  maybeConvert = fmap (bitCoerce @(Unsigned 64)) . maybeConvert
+instance (MaybeConvert a (Unsigned 64)) => MaybeConvert a Word64 where
+  maybeConvert = fmap (bitCoerce @(Unsigned 64)) . maybeConvert
+instance (MaybeConvert a (Unsigned 32)) => MaybeConvert a Word32 where
+  maybeConvert = fmap (bitCoerce @(Unsigned 32)) . maybeConvert
+instance (MaybeConvert a (Unsigned 16)) => MaybeConvert a Word16 where
+  maybeConvert = fmap (bitCoerce @(Unsigned 16)) . maybeConvert
+instance (MaybeConvert a (Unsigned 8)) => MaybeConvert a Word8 where
+  maybeConvert = fmap (bitCoerce @(Unsigned 8)) . maybeConvert
