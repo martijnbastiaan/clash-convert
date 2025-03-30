@@ -1,10 +1,23 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE UndecidableInstances #-}
+
 {-# OPTIONS_HADDOCK hide #-}
 
 module Clash.Convert.Internal.Convert where
 
-import Clash.Prelude
+import Prelude
+
+import Clash.Class.BitPack
+import Clash.Class.Resize
+import Clash.Sized.BitVector
+import Clash.Sized.Index
+import Clash.Sized.Signed
+import Clash.Sized.Unsigned
+
+import GHC.TypeLits.Extra (CLog)
+import GHC.TypeLits (KnownNat, type (<=), type (+), type (^))
+
 import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Word (Word16, Word32, Word64, Word8)
 
@@ -48,6 +61,9 @@ class Convert a b where
 
   >>> convert (3 :: Index 8) :: Unsigned 2
   ...
+
+  For the time being, if the input is an @XException@, then the output is too. This
+  property might be relaxed in the future.
   -}
   convert :: a -> b
 
@@ -55,19 +71,19 @@ instance (KnownNat n, KnownNat m, n <= m) => Convert (Index n) (Index m) where
   convert = resize
 
 instance (KnownNat n, KnownNat m, 1 <= n, n <= 2 ^ m) => Convert (Index n) (Unsigned m) where
-  convert = resize . bitCoerce
+  convert !a = resize $ bitCoerce a
 
 {- | Note: Conversion from @Index 1@ to @Signed 0@ is total, but not within the
 constraints of the instance.
 -}
 instance (KnownNat n, KnownNat m, 1 <= n, CLog 2 n + 1 <= m) => Convert (Index n) (Signed m) where
-  convert = convert . bitCoerce @_ @(Unsigned (CLog 2 n))
+  convert !a = convert $ bitCoerce @_ @(Unsigned (CLog 2 n)) a
 
 instance (KnownNat n, KnownNat m, 1 <= n, n <= 2 ^ m) => Convert (Index n) (BitVector m) where
-  convert = resize . pack
+  convert !a = resize $ pack a
 
 instance (KnownNat n, KnownNat m, 1 <= m, 2 ^ n <= m) => Convert (Unsigned n) (Index m) where
-  convert = bitCoerce . resize
+  convert !a = bitCoerce $ resize a
 
 instance (KnownNat n, KnownNat m, n <= m) => Convert (Unsigned n) (Unsigned m) where
   convert = resize
@@ -79,10 +95,10 @@ instance (KnownNat n, KnownNat m, n + 1 <= m) => Convert (Unsigned n) (Signed m)
   convert = bitCoerce . resize
 
 instance (KnownNat n, KnownNat m, n <= m) => Convert (Unsigned n) (BitVector m) where
-  convert = resize . pack
+  convert !a = resize $ pack a
 
 instance (KnownNat n, KnownNat m, n <= m) => Convert (Signed n) (Signed m) where
-  convert = resize
+  convert !a = resize a
 
 instance (KnownNat n, KnownNat m, 1 <= m, 2 ^ n <= m) => Convert (BitVector n) (Index m) where
   convert = unpack . resize

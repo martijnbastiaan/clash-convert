@@ -1,11 +1,25 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE UndecidableInstances #-}
+
 {-# OPTIONS_HADDOCK hide #-}
 
 module Clash.Convert.Internal.MaybeConvert where
 
-import Clash.Prelude
+import Prelude
+
+import Clash.Class.BitPack
+import Clash.Class.Resize
+import Clash.Promoted.Nat
+import Clash.Sized.BitVector
+import Clash.Sized.Index
+import Clash.Sized.Signed
+import Clash.Sized.Unsigned
+
+import GHC.TypeLits.Extra (CLog)
+import GHC.TypeLits (OrderingI(..), KnownNat, type (<=), type (+), type (^), cmpNat)
+
 import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Word (Word16, Word32, Word64, Word8)
 
@@ -50,32 +64,35 @@ class MaybeConvert a b where
   Just 1
   >>> maybeConvert (7 :: Index 8) :: Maybe (Unsigned 2)
   Nothing
+
+  For the time being, if the input is an @XException@, then the output is too.
+  This property might be relaxed in the future.
   -}
   maybeConvert :: a -> Maybe b
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (Index n) (Index m) where
-  maybeConvert = maybeResize
+  maybeConvert !a = maybeResize a
 
 instance (KnownNat n, KnownNat m, 1 <= n) => MaybeConvert (Index n) (Unsigned m) where
-  maybeConvert = maybeResize . bitCoerce @_ @(Unsigned (CLog 2 n))
+  maybeConvert !a = maybeResize $ bitCoerce @_ @(Unsigned (CLog 2 n)) a
 
 instance (KnownNat n, KnownNat m, 1 <= n) => MaybeConvert (Index n) (Signed m) where
-  maybeConvert = maybeConvert . bitCoerce @_ @(Unsigned (CLog 2 n))
+  maybeConvert !a = maybeConvert $ bitCoerce @_ @(Unsigned (CLog 2 n)) a
 
 instance (KnownNat n, KnownNat m, 1 <= n) => MaybeConvert (Index n) (BitVector m) where
-  maybeConvert = maybeResize . pack
+  maybeConvert !a = maybeResize $ pack a
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (Unsigned n) (Index m) where
-  maybeConvert = maybeResize . bitCoerce @_ @(Index (2 ^ n))
+  maybeConvert !a = maybeResize $ bitCoerce @_ @(Index (2 ^ n)) a
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (Unsigned n) (Unsigned m) where
-  maybeConvert = maybeResize
+  maybeConvert !a = maybeResize a
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (Unsigned n) (Signed m) where
-  maybeConvert = maybeResize . bitCoerce @(Unsigned (n + 1)) . extend
+  maybeConvert !a = maybeResize $ bitCoerce @(Unsigned (n + 1)) $ extend a
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (Unsigned n) (BitVector m) where
-  maybeConvert = maybeResize . pack
+  maybeConvert !a = maybeResize $ pack a
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (Signed n) (Index m) where
   maybeConvert n
@@ -88,7 +105,7 @@ instance (KnownNat n, KnownNat m) => MaybeConvert (Signed n) (Unsigned m) where
     | otherwise = maybeResize (bitCoerce @(Signed (n + 1)) (extend n))
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (Signed n) (Signed m) where
-  maybeConvert = maybeResize
+  maybeConvert !a = maybeResize a
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (Signed n) (BitVector m) where
   maybeConvert n
@@ -96,16 +113,16 @@ instance (KnownNat n, KnownNat m) => MaybeConvert (Signed n) (BitVector m) where
     | otherwise = maybeResize (pack @(Signed (n + 1)) (extend n))
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (BitVector n) (Index m) where
-  maybeConvert = maybeResize . unpack @(Index (2 ^ n))
+  maybeConvert !a = maybeResize $ unpack @(Index (2 ^ n)) a
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (BitVector n) (Unsigned m) where
-  maybeConvert = maybeResize . unpack @(Unsigned n)
+  maybeConvert !a = maybeResize $ unpack @(Unsigned n) a
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (BitVector n) (Signed m) where
-  maybeConvert = maybeResize . unpack @(Signed (n + 1)) . extend
+  maybeConvert !a = maybeResize $ unpack @(Signed (n + 1)) $ extend a
 
 instance (KnownNat n, KnownNat m) => MaybeConvert (BitVector n) (BitVector m) where
-  maybeConvert = maybeResize
+  maybeConvert !a = maybeResize a
 
 {- FOURMOLU_DISABLE -}
 maybeResize ::
